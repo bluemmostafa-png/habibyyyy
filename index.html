@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>حكايتنا</title>
+<style>
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+body { 
+    margin: 0; 
+    min-height: 100vh; 
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+    background: linear-gradient(135deg, #0d0f2b, #1a1c40); 
+    color: white; 
+    overflow-x: hidden; 
+}
+.app { width: min(92%, 480px); margin: auto; padding: 25px 0 50px; }
+.screen { display: none; }
+.screen.active { display: block; animation: fadeIn 0.5s cubic-bezier(0.4, 0, 0.2, 1); }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+
+.card { 
+    background: rgba(255, 255, 255, 0.08); 
+    border: 1px solid rgba(255, 255, 255, 0.18); 
+    border-radius: 24px; 
+    padding: 25px 20px; 
+    text-align: center; 
+    backdrop-filter: blur(12px); 
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+}
+
+.title { font-size: 30px; margin-bottom: 8px; color: #ffb6c1; text-shadow: 0 0 10px rgba(255,182,193,0.3); }
+.subtitle { font-size: 15px; color: #ddd; line-height: 1.6; margin-bottom: 15px; }
+
+.btn { 
+    width: 100%; 
+    padding: 15px; 
+    margin-top: 12px; 
+    border: none; 
+    border-radius: 14px; 
+    background: linear-gradient(135deg, #ff75b5, #785cff); 
+    color: white; 
+    font-size: 16px; 
+    font-weight: bold; 
+    cursor: pointer; 
+    box-shadow: 0 4px 15px rgba(255, 117, 181, 0.3);
+    transition: all 0.2s ease;
+}
+.btn:active { transform: scale(0.97); }
+.btn-secondary { background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.2); box-shadow: none; }
+
+.progress { height: 8px; background: rgba(255,255,255,0.1); border-radius: 10px; margin: 15px 0; overflow: hidden; }
+.progress-bar { height: 100%; width: 0; background: linear-gradient(90deg, #ff75b5, #785cff); transition: width 0.4s ease; }
+
+.game-box { position: relative; height: 320px; background: rgba(0,0,0,0.35); border-radius: 18px; overflow: hidden; margin: 15px 0; border: 1px solid rgba(255,255,255,0.15); }
+.heart-item { position: absolute; font-size: 32px; cursor: pointer; user-select: none; filter: drop-shadow(0 0 5px #ff75b5); }
+
+.date-input { width: 100%; padding: 14px; border-radius: 12px; border: 1.5px solid #ff75b5; background: rgba(0,0,0,0.5); color: white; text-align: center; font-size: 20px; margin-top: 15px; letter-spacing: 2px; }
+.msg-text { text-align: right; line-height: 2; font-size: 16px; color: #f0f0f0; white-space: pre-wrap; word-break: break-word; }
+</style>
+</head>
+<body>
+
+<div class="app">
+
+    <!-- HOME -->
+    <div id="home" class="screen active">
+        <div class="card">
+            <div style="font-size: 55px; margin-bottom: 10px;">💖</div>
+            <h1 class="title">حكايتنا الصغيرة</h1>
+            <p class="subtitle">رحلة صغيرة عملتها مخصوص عشانك..<br>فيها شوية ألعاب وشوية مفاجآت بسيطة</p>
+            <button class="btn" onclick="goTo('phase1')">ابدأ الحكاية ✨</button>
+        </div>
+    </div>
+
+    <!-- PHASE 1: QUESTIONS -->
+    <div id="phase1" class="screen">
+        <div class="card">
+            <h2>اختبر معرفتك بيها</h2>
+            <div class="progress"><div id="pBar" class="progress-bar"></div></div>
+            <p id="qText" style="font-size: 18px; margin-bottom: 15px; font-weight: bold; color: #ffb6c1;"></p>
+            <div id="answers"></div>
+        </div>
+    </div>
+
+    <!-- MSG 1 -->
+    <div id="msg1" class="screen">
+        <div class="card">
+            <div style="font-size: 45px;">🌸</div>
+            <h2>خلصت أول مرحلة</h2>
+            <div class="msg-text" id="m1Text"></div>
+            <button class="btn" onclick="goTo('phase2')">نكمل؟ ✨</button>
+        </div>
+    </div>
+
+    <!-- PHASE 2: HEARTS -->
+    <div id="phase2" class="screen">
+        <div class="card">
+            <h2>اجمعي القلوب 💖</h2>
+            <p class="subtitle">اضغطي على القلوب النازلة قبل ما تقع!</p>
+            <div style="margin-top: 10px; font-size: 18px;">القلوب اللي جمعتيها: <span id="score" style="color:#ff75b5; font-weight:bold;">0</span></div>
+            <div id="heartGame" class="game-box"></div>
+            <button id="startHBtn" class="btn" onclick="startHeartGame()">ابدأ جمع القلوب</button>
+            <button id="nextHBtn" class="btn" style="display:none;" onclick="goTo('msg2')">كملي المرحلة التالية ✨</button>
+        </div>
+    </div>
+
+    <!-- MSG 2 -->
+    <div id="msg2" class="screen">
+        <div class="card">
+            <div style="font-size: 45px;">💖</div>
+            <h2>المرحلة التانية خلصت</h2>
+            <div class="msg-text" id="m2Text"></div>
+            <button class="btn" onclick="goTo('phase3')">المرحلة اللي بعدها ✨</button>
+        </div>
+    </div>
+
+    <!-- PHASE 3: RAPUNZEL -->
+    <div id="phase3" class="screen">
+        <div class="card">
+            <h2>مغامرة روبانزل 👑</h2>
+            <p class="subtitle">استخدمي الأسهم عشان توصلي للنجمة ★</p>
+            <div id="rpGame" class="game-box">
+                <div id="star" style="position: absolute; top: 20px; right: 20px; font-size: 35px; color: #ffd700;">★</div>
+                <div id="rpPlayer" style="position: absolute; bottom: 20px; left: 20px; width: 42px; height: 42px; background: #ff75b5; border-radius: 50%; box-shadow: 0 0 10px #ff75b5; transition: 0.2s;"></div>
+            </div>
+            <div style="display: flex; gap: 10px;">
+                <button class="btn btn-secondary" onclick="moveRp(-35)">← يسار</button>
+                <button class="btn btn-secondary" onclick="moveRp(35)">يمين →</button>
+            </div>
+            <button id="rpNextBtn" class="btn" style="display:none; margin-top: 15px;" onclick="goTo('msg3')">وصلنا! كملي ✨</button>
+        </div>
+    </div>
+
+    <!-- MSG 3 -->
+    <div id="msg3" class="screen">
+        <div class="card">
+            <div style="font-size: 45px;">⭐</div>
+            <h2>وصلنا لآخر مرحلة</h2>
+            <div class="msg-text" id="m3Text"></div>
+            <button class="btn" onclick="goTo('safe')">افتحي الخزنة 🔐</button>
+        </div>
+    </div>
+
+    <!-- SAFE -->
+    <div id="safe" class="screen">
+        <div class="card">
+            <h2>الخزنة السرية 🔐</h2>
+            <p class="subtitle">دخلي التاريخ الخاص اللي بينك وبين صاصتك</p>
+            <input type="text" id="secretInput" class="date-input" placeholder="DD/MM/YYYY">
+            <div id="safeErr" style="color: #ff8da1; margin-top: 10px; font-size: 14px;"></div>
+            <button class="btn" onclick="checkDate()">فتح الخزنة</button>
+        </div>
+    </div>
+
+    <!-- FINAL -->
+    <div id="final" class="screen">
+        <div class="card">
+            <div style="font-size: 55px; margin-bottom: 10px;">💌</div>
+            <h2>دي كانت آخر حاجة مخبيها ليكي</h2>
+            <div class="msg-text" id="finalText" style="min-height: 160px;"></div>
+            <div style="margin-top: 20px; color: #ffb6c1; font-weight: bold; font-size: 18px;">— صاصتك ♥</div>
+            <button class="btn" style="margin-top: 20px;" onclick="goTo('home')">العودة للبداية 🔄</button>
+        </div>
+    </div>
+
+</div>
+
+<script>
+const DATA = {
+    q: [
+        { q: "إيه أكتر حاجة بتحبها؟", a: ["صاصتكككككك", "الخروج", "النوم دي اكيد غلط🙂", "المفاجآت"], c: 0 },
+        { q: "إيه أكتر حاجة بتفرحها؟", a: ["الكلام الحلو", "الوقت اللي بنقضيه سوا", "النومممم ودي مش حقيقة انا عارف انك بتحبيني اكتر🌚", "الحنية لما تحس اني حنين عليها اوي"], c: 3 },
+        { q: "لو زعلت منك تعمل إيه؟", a: ["اعمل كل دا عشان انتي نور عيني اغلى حاجة عندي اصلا والله", "افضل جمبها", "اسيب الدنيا واجي ليها", "امسك فيها واصالحها"], c: 0 }
+    ],
+    m1: "دي كانت أول خطوة في الحكاية..\n\nومهما كانت إجاباتك، فأنا عارف حاجة واحدة بس:\nإن وجودك في حياتي لوحده حاجة أنا ممتن ليها جداً، وحاجة أقدر أفضّل أصلحها وأحبك وأدلعك وأكون أحن حد عليكِ بسببها.. بحبك والله وينور عيني ♥",
+    m2: "شوفتي بقى؟\n\nحتى القلوب مقدرتش تهرب منك!\n\nبس لسه الحكاية مخلصتش، ولسه في حاجات تانية مستنياكي..",
+    m3: "يمكن دي كانت مجرد لعبة..\n\nبس كل مرحلة فيها كانت معمولة مخصوص عشان توصلك للنهاية.\n\nوالنهاية لسه مستخبية!",
+    date: "3/4/2026",
+    final: "يمكن وإنتي بتلعبي اللعبة دي مكنتيش عارفة هي هتوصلك لإيه..\n\nبس أنا كنت عايز في الآخر توصلي لحاجة واحدة بس:\n\nإنك شخص غالي عندي أوي والله، وإنك أهم حاجة في حياتي أصلاً وانك احلى واغلى حاجة دخلت حياتي انا بحبك اوي اوي والله وهفضل بحبك طول ما انا عاي لسا..\n\nوإن كل تفصيلة صغيرة في الحكاية دي اتعملت عشان أخليكي تبتسمي وعشان انتي تستاهلي كل الخير اللي في الدنيا كلها ينور عيني.\n\nالتاريخ اللي فتح الخزنة دي (3/4/2026) هيفضل ليه مكان خاص جداً عندي..\n\nودي مش نهاية الحكاية... ♥"
+};
+
+function goTo(id) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    if(id === 'phase1') loadQ(0);
+    if(id === 'msg1') document.getElementById('m1Text').innerText = DATA.m1;
+    if(id === 'msg2') document.getElementById('m2Text').innerText = DATA.m2;
+    if(id === 'msg3') document.getElementById('m3Text').innerText = DATA.m3;
+}
+
+// Phase 1 Logic
+let currentQ = 0;
+function loadQ(idx) {
+    currentQ = idx;
+    if(idx >= DATA.q.length) { goTo('msg1'); return; }
+    document.getElementById('pBar').style.width = ((idx+1)/DATA.q.length*100) + '%';
+    document.getElementById('qText').innerText = DATA.q[idx].q;
+    const box = document.getElementById('answers');
+    box.innerHTML = '';
+    DATA.q[idx].a.forEach((ans) => {
+        const b = document.createElement('button');
+        b.className = 'btn btn-secondary';
+        b.innerText = ans;
+        b.onclick = () => loadQ(currentQ + 1);
+        box.appendChild(b);
+    });
+}
+
+// Phase 2 Logic
+let score = 0, hTimer;
+function startHeartGame() {
+    score = 0;
+    document.getElementById('score').innerText = score;
+    document.getElementById('startHBtn').style.display = 'none';
+    const box = document.getElementById('heartGame');
+    box.innerHTML = '';
+    
+    hTimer = setInterval(() => {
+        const h = document.createElement('div');
+        h.className = 'heart-item';
+        h.innerText = '💖';
+        h.style.left = Math.random() * (box.clientWidth - 35) + 'px';
+        h.style.top = '0px';
+        h.onclick = () => { score++; document.getElementById('score').innerText = score; h.remove(); };
+        box.appendChild(h);
+        
+        let top = 0;
+        let fall = setInterval(() => {
+            top += 4;
+            h.style.top = top + 'px';
+            if(top > box.clientHeight - 35) { clearInterval(fall); h.remove(); }
+        }, 30);
+    }, 550);
+
+    setTimeout(() => {
+        clearInterval(hTimer);
+        document.getElementById('nextHBtn').style.display = 'block';
+    }, 12000);
+}
+
+// Phase 3 Logic
+let rpPos = 20;
+function moveRp(dir) {
+    const box = document.getElementById('rpGame');
+    rpPos = Math.max(10, Math.min(box.clientWidth - 50, rpPos + dir));
+    document.getElementById('rpPlayer').style.left = rpPos + 'px';
+    if(rpPos >= box.clientWidth - 70) {
+        document.getElementById('rpNextBtn').style.display = 'block';
+    }
+}
+
+// Safe Logic
+function checkDate() {
+    let v = document.getElementById('secretInput').value.trim().replace(/-/g, '/');
+    if(v.replace(/^0/, '').replace(/\/0/g, '/') === DATA.date) {
+        goTo('final');
+        typeWriter(DATA.final);
+    } else {
+        document.getElementById('safeErr').innerText = 'التاريخ مش صح يا قلبي، افتكري تاني! ♥';
+    }
+}
+
+function typeWriter(txt) {
+    let el = document.getElementById('finalText');
+    el.innerHTML = '';
+    let i = 0;
+    
+    let t = setInterval(() => {
+        if (i < txt.length) {
+            let char = txt.charAt(i);
+            if (char === '\n') {
+                el.innerHTML += '<br>';
+            } else {
+                el.innerHTML += char;
+            }
+            i++;
+        } else {
+            clearInterval(t);
+        }
+    }, 40);
+}
+</script>
+</body>
+              </html>
+              
